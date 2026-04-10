@@ -56,9 +56,13 @@ export default function ResultDualView({ sessionState, onReset }) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', delay: 0.6 }}
-            className="text-5xl mb-4"
+            className="w-20 h-20 rounded-full border-2 border-brand-gold flex items-center justify-center mb-4 overflow-hidden gold-glow"
           >
-            {res1.icon}
+            {res1.fingerprintImage ? (
+              <img src={res1.fingerprintImage} alt="指紋" className="w-full h-full object-cover" style={{ imageRendering: 'auto' }} />
+            ) : (
+              <span className="text-5xl">{res1.icon}</span>
+            )}
           </motion.div>
           <h3 className="font-cormorant text-3xl font-bold mb-4">{res1.name}</h3>
           <p className="text-sm text-brand-mint leading-relaxed">{res1.desc}</p>
@@ -108,9 +112,13 @@ export default function ResultDualView({ sessionState, onReset }) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', delay: 0.7 }}
-            className="text-5xl mb-4"
+            className="w-20 h-20 rounded-full border-2 border-brand-gold flex items-center justify-center mb-4 overflow-hidden gold-glow"
           >
-            {res2.icon}
+            {res2.fingerprintImage ? (
+              <img src={res2.fingerprintImage} alt="指紋" className="w-full h-full object-cover" style={{ imageRendering: 'auto' }} />
+            ) : (
+              <span className="text-5xl">{res2.icon}</span>
+            )}
           </motion.div>
           <h3 className="font-cormorant text-3xl font-bold mb-4">{res2.name}</h3>
           <p className="text-sm text-brand-mint leading-relaxed">{res2.desc}</p>

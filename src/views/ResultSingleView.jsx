@@ -31,9 +31,18 @@ export default function ResultSingleView({ results, onReset }) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', delay: 0.5 }}
-            className="w-32 h-32 rounded-full border-4 border-brand-gold flex items-center justify-center mb-6 gold-glow"
+            className="w-32 h-32 rounded-full border-4 border-brand-gold flex items-center justify-center mb-6 gold-glow overflow-hidden"
           >
-            <span className="text-4xl">{res.icon}</span>
+            {res.fingerprintImage ? (
+              <img
+                src={res.fingerprintImage}
+                alt="指紋"
+                className="w-full h-full object-cover"
+                style={{ imageRendering: 'auto' }}
+              />
+            ) : (
+              <span className="text-4xl">{res.icon}</span>
+            )}
           </motion.div>
           <div className="text-brand-mint tracking-widest uppercase text-xs font-bold mb-2">主導特質</div>
           <h3 className="font-cormorant text-4xl font-bold text-white mb-2">{res.name}</h3>
