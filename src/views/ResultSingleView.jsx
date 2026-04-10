@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export default function ResultSingleView({ results, onReset }) {
+export default function ResultSingleView({ results, onLeadCapture, onReset }) {
   const res = results[0];
 
   return (
@@ -80,8 +80,18 @@ export default function ResultSingleView({ results, onReset }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
+        onClick={onLeadCapture} 
+        className="mt-10 px-8 py-4 rounded-full bg-brand-gold text-brand-teal font-bold text-lg tracking-wider hover:bg-brand-gold/90 transition-all gold-glow"
+      >
+        免費獲取完整報告
+      </motion.button>
+
+      <motion.button 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
         onClick={onReset} 
-        className="mt-10 px-8 py-3 rounded-full border border-brand-mint text-brand-mint hover:bg-brand-mint hover:text-brand-teal transition-all"
+        className="mt-4 px-8 py-3 rounded-full border border-brand-glass-border text-white/50 text-sm hover:text-white/80 hover:border-white/30 transition-all"
       >
         開始全新分析
       </motion.button>

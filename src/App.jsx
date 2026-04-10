@@ -1,19 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { FavCRM } from '@favcrm/sdk';
 import WelcomeView from './views/WelcomeView';
 import ModeSelectionView from './views/ModeSelectionView';
 import ScanView from './views/ScanView';
 import ResultSingleView from './views/ResultSingleView';
 import ResultDualView from './views/ResultDualView';
+import LeadCaptureView from './views/LeadCaptureView';
 import DebugUsbView from './views/DebugUsbView';
 import ScannerStatusBar from './components/ScannerStatusBar';
 import useFingerprintScanner from './hooks/useFingerprintScanner';
 
+// SDK configuration — update these for your deployment
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.favcrm.com';
+const COMPANY_ID = import.meta.env.VITE_COMPANY_ID || '6fde1755-292d-4264-ad13-85eec9230f85';
+
 export default function App() {
   const scanner = useFingerprintScanner();
 
+  const sdk = useMemo(() => new FavCRM({
+    baseUrl: API_BASE_URL,
+    companyId: COMPANY_ID,
+  }), []);
+
   const [sessionState, setSessionState] = useState({
-    currentView: 'welcome', // 'welcome' | 'select' | 'scan' | 'result' | 'debug'
+    currentView: 'welcome', // 'welcome' | 'select' | 'scan' | 'result' | 'lead-capture' | 'debug'
     mode: null,             // 'single' | 'couple' | 'family'
     totalPersons: 1,
     currentPersonScanned: 0,
@@ -106,10 +117,13 @@ export default function App() {
             />
           )}
           {sessionState.currentView === 'result' && sessionState.mode === 'single' && (
-            <ResultSingleView key="result-single" results={sessionState.results} onReset={resetSession} />
+            <ResultSingleView key="result-single" results={sessionState.results} onLeadCapture={() => navigate('lead-capture')} onReset={resetSession} />
           )}
           {sessionState.currentView === 'result' && sessionState.mode !== 'single' && (
-            <ResultDualView key="result-dual" sessionState={sessionState} onReset={resetSession} />
+            <ResultDualView key="result-dual" sessionState={sessionState} onLeadCapture={() => navigate('lead-capture')} onReset={resetSession} />
+          )}
+          {sessionState.currentView === 'lead-capture' && (
+            <LeadCaptureView key="lead-capture" results={sessionState.results} sdk={sdk} onReset={resetSession} />
           )}
           {isDebug && (
             <DebugUsbView key="debug-usb" onBack={() => navigate('welcome')} />
