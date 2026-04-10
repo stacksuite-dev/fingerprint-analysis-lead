@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
+import useTripleTap from '../hooks/useTripleTap';
 
 export default function ResultSingleView({ results, onLeadCapture, onReset }) {
   const res = results[0];
+  const handleTripleTap = useTripleTap(onLeadCapture);
 
   return (
     <motion.div 
@@ -15,7 +17,8 @@ export default function ResultSingleView({ results, onLeadCapture, onReset }) {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="font-cormorant text-4xl mb-8 text-center text-brand-gold"
+        className="font-cormorant text-4xl mb-8 text-center text-brand-gold select-none"
+        onClick={handleTripleTap}
       >
         分析完成
       </motion.h2>
@@ -80,18 +83,8 @@ export default function ResultSingleView({ results, onLeadCapture, onReset }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        onClick={onLeadCapture} 
-        className="mt-10 px-8 py-4 rounded-full bg-brand-gold text-brand-teal font-bold text-lg tracking-wider hover:bg-brand-gold/90 transition-all gold-glow"
-      >
-        免費獲取完整報告
-      </motion.button>
-
-      <motion.button 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
         onClick={onReset} 
-        className="mt-4 px-8 py-3 rounded-full border border-brand-glass-border text-white/50 text-sm hover:text-white/80 hover:border-white/30 transition-all"
+        className="mt-10 px-8 py-3 rounded-full border border-brand-glass-border text-white/50 text-sm hover:text-white/80 hover:border-white/30 transition-all"
       >
         開始全新分析
       </motion.button>

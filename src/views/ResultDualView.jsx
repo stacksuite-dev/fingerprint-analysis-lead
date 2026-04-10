@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import useTripleTap from '../hooks/useTripleTap';
 
 const synergyDescriptions = [
   "優勢互補。一方提供宏觀願景，另一方提供穩定的情感支持與執行力。",
@@ -12,6 +13,7 @@ export default function ResultDualView({ sessionState, onLeadCapture, onReset })
   const { results, mode } = sessionState;
   const res1 = results[0];
   const res2 = results[1];
+  const handleTripleTap = useTripleTap(onLeadCapture);
 
   const [score, setScore] = useState(0);
   const [synergyText, setSynergyText] = useState("");
@@ -38,7 +40,8 @@ export default function ResultDualView({ sessionState, onLeadCapture, onReset })
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="font-cormorant text-4xl mb-6 text-center text-brand-gold"
+        className="font-cormorant text-4xl mb-6 text-center text-brand-gold select-none"
+        onClick={handleTripleTap}
       >
         {title}
       </motion.h2>
@@ -129,18 +132,8 @@ export default function ResultDualView({ sessionState, onLeadCapture, onReset })
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6 }}
-        onClick={onLeadCapture} 
-        className="mt-8 px-8 py-4 rounded-full bg-brand-gold text-brand-teal font-bold text-lg tracking-wider hover:bg-brand-gold/90 transition-all gold-glow"
-      >
-        免費獲取完整報告
-      </motion.button>
-
-      <motion.button 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.8 }}
         onClick={onReset} 
-        className="mt-4 px-8 py-3 rounded-full border border-brand-glass-border text-white/50 text-sm hover:text-white/80 hover:border-white/30 transition-all"
+        className="mt-8 px-8 py-3 rounded-full border border-brand-glass-border text-white/50 text-sm hover:text-white/80 hover:border-white/30 transition-all"
       >
         開始全新分析
       </motion.button>
