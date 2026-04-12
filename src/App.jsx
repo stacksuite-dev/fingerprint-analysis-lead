@@ -7,12 +7,13 @@ import ScanView from './views/ScanView';
 import ResultSingleView from './views/ResultSingleView';
 import ResultDualView from './views/ResultDualView';
 import LeadCaptureView from './views/LeadCaptureView';
+import DisclaimerView from './views/DisclaimerView';
 import DebugUsbView from './views/DebugUsbView';
 import ScannerStatusBar from './components/ScannerStatusBar';
 import useFingerprintScanner from './hooks/useFingerprintScanner';
 
 // SDK configuration — update these for your deployment
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.favcrm.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.favcrm.io';
 const COMPANY_ID = import.meta.env.VITE_COMPANY_ID || '6fde1755-292d-4264-ad13-85eec9230f85';
 
 export default function App() {
@@ -24,11 +25,12 @@ export default function App() {
   }), []);
 
   const [sessionState, setSessionState] = useState({
-    currentView: 'welcome', // 'welcome' | 'select' | 'scan' | 'result' | 'lead-capture' | 'debug'
+    currentView: 'welcome', // 'welcome' | 'disclaimer' | 'select' | 'scan' | 'result' | 'lead-capture' | 'debug'
     mode: null,             // 'single' | 'couple' | 'family'
     totalPersons: 1,
     currentPersonScanned: 0,
-    results: []             
+    results: [],
+    dualMeta: null          // { score, synergyText } — set by ResultDualView
   });
 
   // Silent reconnect on app mount — no popup, uses previously-paired device
@@ -70,6 +72,21 @@ export default function App() {
     });
   };
 
+  const handleDualMeta = (meta) => {
+    setSessionState(prev => ({ ...prev, dualMeta: meta }));
+  };
+
+  const handleResultOverride = (personIndex, newType) => {
+    setSessionState(prev => {
+      const newResults = [...prev.results];
+      newResults[personIndex] = {
+        ...newResults[personIndex],
+        ...newType,
+      };
+      return { ...prev, results: newResults };
+    });
+  };
+
   const resetSession = () => {
     setSessionState({
       currentView: 'welcome',
@@ -103,7 +120,10 @@ export default function App() {
       <div className="flex-1 flex items-center justify-center p-8 min-h-0">
         <AnimatePresence mode="wait">
           {sessionState.currentView === 'welcome' && (
-            <WelcomeView key="welcome" onStart={() => navigate('select')} />
+            <WelcomeView key="welcome" onStart={() => navigate('disclaimer')} />
+          )}
+          {sessionState.currentView === 'disclaimer' && (
+            <DisclaimerView key="disclaimer" onAccept={() => navigate('select')} onBack={() => navigate('welcome')} />
           )}
           {sessionState.currentView === 'select' && (
             <ModeSelectionView key="select" onSelect={startSession} onBack={() => navigate('welcome')} />
@@ -117,13 +137,13 @@ export default function App() {
             />
           )}
           {sessionState.currentView === 'result' && sessionState.mode === 'single' && (
-            <ResultSingleView key="result-single" results={sessionState.results} onLeadCapture={() => navigate('lead-capture')} onReset={resetSession} />
+            <ResultSingleView key="result-single" results={sessionState.results} onResultOverride={handleResultOverride} onLeadCapture={() => navigate('lead-capture')} onReset={resetSession} />
           )}
           {sessionState.currentView === 'result' && sessionState.mode !== 'single' && (
-            <ResultDualView key="result-dual" sessionState={sessionState} onLeadCapture={() => navigate('lead-capture')} onReset={resetSession} />
+            <ResultDualView key="result-dual" sessionState={sessionState} onResultOverride={handleResultOverride} onDualMeta={handleDualMeta} onLeadCapture={() => navigate('lead-capture')} onReset={resetSession} />
           )}
           {sessionState.currentView === 'lead-capture' && (
-            <LeadCaptureView key="lead-capture" results={sessionState.results} sdk={sdk} onReset={resetSession} />
+            <LeadCaptureView key="lead-capture" results={sessionState.results} mode={sessionState.mode} dualMeta={sessionState.dualMeta} sdk={sdk} onReset={resetSession} />
           )}
           {isDebug && (
             <DebugUsbView key="debug-usb" onBack={() => navigate('welcome')} />

@@ -1,8 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-export default function LeadCaptureView({ results, sdk, onReset }) {
-  const [form, setForm] = useState({ name: '', phone: '', email: '' });
+const MODE_LABELS = {
+  single: '個人分析',
+  couple: '合作夥伴協同分析',
+  family: '親子協同分析',
+};
+
+export default function LeadCaptureView({ results, mode, dualMeta, sdk, onReset }) {
+  const [form, setForm] = useState({ name: '', phone: '', email: '', comment: '' });
   const [submitState, setSubmitState] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
   const nameRef = useRef(null);
@@ -26,9 +32,41 @@ export default function LeadCaptureView({ results, sdk, onReset }) {
 
   const buildResultSummary = () => {
     if (!results || results.length === 0) return '指紋分析查詢';
-    return results
-      .map((r, i) => `參加者 ${i + 1}: ${r.name} - ${r.desc}`)
-      .join('\n');
+
+    const lines = [];
+
+    // Mode label
+    lines.push(`📋 分析模式：${MODE_LABELS[mode] || mode}`);
+    lines.push('');
+
+    // Each participant's full result
+    results.forEach((r, i) => {
+      let label = `參加者 ${i + 1}`;
+      if (mode === 'single') label = '分析結果';
+      else if (mode === 'family') label = i === 0 ? '家長 / 成人' : '孩子';
+
+      lines.push(`▸ ${label}：${r.name} ${r.icon}`);
+      lines.push(`  特質：${r.desc}`);
+      lines.push(`  優勢：${r.strengths}`);
+      lines.push(`  盲點：${r.weak}`);
+      lines.push('');
+    });
+
+    // Dual-mode compatibility
+    if (dualMeta && mode !== 'single') {
+      lines.push(`🔗 契合度：${dualMeta.score}%`);
+      lines.push(`互動關係：${dualMeta.synergyText}`);
+      lines.push('');
+    }
+
+    // Analyzer comment
+    const comment = form.comment.trim();
+    if (comment) {
+      lines.push(`💬 分析師備註：`);
+      lines.push(comment);
+    }
+
+    return lines.join('\n');
   };
 
   const savePendingLead = () => {
@@ -36,7 +74,9 @@ export default function LeadCaptureView({ results, sdk, onReset }) {
       const pending = JSON.parse(localStorage.getItem('pending_leads') || '[]');
       pending.push({
         ...form,
-        results: results.map((r) => ({ name: r.name, desc: r.desc })),
+        mode,
+        dualMeta,
+        results: results.map((r) => ({ name: r.name, icon: r.icon, desc: r.desc, strengths: r.strengths, weak: r.weak })),
         timestamp: new Date().toISOString(),
       });
       localStorage.setItem('pending_leads', JSON.stringify(pending));
@@ -171,7 +211,7 @@ export default function LeadCaptureView({ results, sdk, onReset }) {
           />
         </div>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <label className="block text-xs text-brand-gold uppercase tracking-wider mb-2">
             電郵地址
           </label>
@@ -181,6 +221,20 @@ export default function LeadCaptureView({ results, sdk, onReset }) {
             onChange={updateField('email')}
             placeholder="email@example.com"
             className={inputClasses}
+            autoComplete="off"
+          />
+        </div>
+
+        <div className="mb-8">
+          <label className="block text-xs text-brand-gold uppercase tracking-wider mb-2">
+            分析師備註<span className="text-white/30 ml-1">（選填）</span>
+          </label>
+          <textarea
+            value={form.comment}
+            onChange={updateField('comment')}
+            placeholder="可輸入觀察記錄或建議..."
+            rows={2}
+            className={`${inputClasses} resize-none`}
             autoComplete="off"
           />
         </div>

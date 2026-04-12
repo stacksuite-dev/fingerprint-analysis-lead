@@ -1,16 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Mock Data for "Weekday" personality types
-const types = [
-  { name: "星期一", icon: "🌙", desc: "直覺敏銳，極具同理心且適應力強。在充滿支持的環境中如魚得水，重視情感連結。", strengths: "同理心、適應力", weak: "容易受他人情緒影響" },
-  { name: "星期二", icon: "🔥", desc: "充滿活力，具備勇氣與行動力。面對挑戰時會迎難而上，喜歡主動出擊。", strengths: "勇氣、決斷力", weak: "有時缺乏耐性" },
-  { name: "星期三", icon: "💬", desc: "善於溝通，理性且才思敏捷。是交換意見與創意思維的大師。", strengths: "溝通能力、邏輯思維", weak: "容易流於空談而缺乏行動" },
-  { name: "星期四", icon: "⛰️", desc: "心胸廣闊，具備哲學思維與成長導向。總是著眼於大局並追求真理。", strengths: "遠見、樂觀", weak: "容易忽略執行細節" },
-  { name: "星期五", icon: "🌸", desc: "追求和諧，具有藝術氣質且重視人際關係。為日常生活帶來美感。", strengths: "創造力、人際手腕", weak: "優柔寡斷、避免衝突" },
-  { name: "星期六", icon: "🪐", desc: "紀律嚴明，有條理且負責任。善於建立持久而穩固的基礎。", strengths: "自律、耐力", weak: "過於固執、缺乏彈性" },
-  { name: "星期日", icon: "☀️", desc: "光芒四射，精力充沛且自然成為焦點。以溫暖與清晰的願景啟發他人。", strengths: "個人魅力、領導力", weak: "偶爾會過度自我中心" },
-];
+import { personalityTypes as types } from '../data/personalityTypes';
 
 /**
  * ScanView — fingerprint capture screen.
@@ -93,7 +83,53 @@ export default function ScanView({ sessionState, scanner, onScanComplete }) {
     setStatusText('請將手指放在掃描器上');
   }, []);
 
+  // ── Mock capture for testing without scanner ─────────────────────────────────
+  const mockCapture = useCallback(() => {
+    setScanPhase('scanning');
+    setStatusText('正在擷取指紋...');
+
+    // Generate a synthetic fingerprint image on canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 384;
+    canvas.height = 480;
+    const ctx = canvas.getContext('2d');
+
+    // Dark background
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, 384, 480);
+
+    // Draw concentric ellipses to simulate fingerprint ridges
+    ctx.strokeStyle = 'rgba(180, 160, 130, 0.6)';
+    ctx.lineWidth = 1.5;
+    const cx = 192 + (Math.random() - 0.5) * 30;
+    const cy = 240 + (Math.random() - 0.5) * 40;
+    for (let i = 8; i < 160; i += 4 + Math.random() * 2) {
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, i * 1.1, i * 1.4, (Math.random() - 0.5) * 0.3, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Add some noise
+    const imageData = ctx.getImageData(0, 0, 384, 480);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 30;
+      imageData.data[i] += noise;
+      imageData.data[i + 1] += noise;
+      imageData.data[i + 2] += noise;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    const dataUrl = canvas.toDataURL('image/png');
+
+    setTimeout(() => {
+      setCapturedImage(dataUrl);
+      setScanPhase('confirming');
+      setStatusText('請確認指紋擷取品質');
+    }, 1200);
+  }, []);
+
   // ── Derived state ───────────────────────────────────────────────────────────
+  const isDev = import.meta.env.DEV;
   const isBusy = scanPhase !== 'waiting';
   const isComplete = scanPhase === 'complete';
   const isConfirming = scanPhase === 'confirming';
@@ -188,6 +224,14 @@ export default function ScanView({ sessionState, scanner, onScanComplete }) {
                     <p className="text-brand-mint/70 text-lg font-outfit">等待掃描器連接</p>
                     <p className="text-brand-mint/40 text-sm mt-1">請使用底部工具列連接指紋掃描器</p>
                   </div>
+                  {isDev && (
+                    <button
+                      onClick={mockCapture}
+                      className="mt-2 px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/30 text-xs hover:text-white/60 hover:border-white/20 transition-all"
+                    >
+                      DEBUG: Mock Capture
+                    </button>
+                  )}
                 </motion.div>
               )}
 
