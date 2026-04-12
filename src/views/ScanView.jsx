@@ -129,7 +129,6 @@ export default function ScanView({ sessionState, scanner, onScanComplete }) {
   }, []);
 
   // ── Derived state ───────────────────────────────────────────────────────────
-  const isDev = import.meta.env.DEV;
   const isBusy = scanPhase !== 'waiting';
   const isComplete = scanPhase === 'complete';
   const isConfirming = scanPhase === 'confirming';
@@ -224,14 +223,12 @@ export default function ScanView({ sessionState, scanner, onScanComplete }) {
                     <p className="text-brand-mint/70 text-lg font-outfit">等待掃描器連接</p>
                     <p className="text-brand-mint/40 text-sm mt-1">請使用底部工具列連接指紋掃描器</p>
                   </div>
-                  {isDev && (
-                    <button
-                      onClick={mockCapture}
-                      className="mt-2 px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/30 text-xs hover:text-white/60 hover:border-white/20 transition-all"
-                    >
-                      DEBUG: Mock Capture
-                    </button>
-                  )}
+                  <button
+                    onClick={mockCapture}
+                    className="mt-2 px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/30 text-xs hover:text-white/60 hover:border-white/20 transition-all"
+                  >
+                    DEBUG: Mock Capture
+                  </button>
                 </motion.div>
               )}
 
